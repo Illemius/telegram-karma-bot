@@ -43,7 +43,7 @@ def crash_message(message):
         telebot.logger.error('\n\t'.join(c.formatted_traceback))
         bot.send_message(message.chat.id, 'Во время выполнения команды произошла ошибка :с\n'
                                           'Если не сложно, перешли, пожалуйста это сообщение разработчику '
-                                          '{user}n'
+                                          '{user}\n'
                                           'Report: {id}-{file}'.format(user=get_username_or_name(root_user),
                                                                        id=c.id, file=c.filename))
         chat_log.error('Crash report: <b>{id}</b>\n'
