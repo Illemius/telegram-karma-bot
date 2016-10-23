@@ -10,6 +10,7 @@ class Karma(Document):
     to_user = IntField(default=0)
 
     amount = IntField()
+    transfer = BooleanField()
     description = StringField()
 
     rollback = BooleanField()
