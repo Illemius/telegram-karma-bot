@@ -12,6 +12,7 @@ class Dialogs(Document):
     # Settings
     locale = StringField(default=DEFAULT_LOCALE)
     default_dialog = IntField()
+    subscribe = BooleanField(default=False)
     admin = BooleanField(default=False)
 
     # Logging
