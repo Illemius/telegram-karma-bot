@@ -8,18 +8,19 @@ import logging
 import threading
 
 import flask
+from TranslateLib import locale_gen, set_locale
 from flask import Flask, redirect
 from mongoengine import connect
 
+import extensions
 import telebot
-from config import WEBHOOK_URL, WEB_HOST, WEB_PORT, USE_WEBHOOK, LOGGING_CHAT
-from meta import MONGO_DATABASE, MONGO_PORT, BOT_URL, WEBHOOK_URL_PATH, bot
+from config import WEBHOOK_URL, WEB_HOST, WEB_PORT, USE_WEBHOOK, LOGGING_CHAT, DEFAULT_LOCALE
+from meta import MONGO_DATABASE, MONGO_PORT, BOT_URL, WEBHOOK_URL_PATH, bot, LOCALES_PATH
 from meta import MONGO_HOST
 from utils.chat_logger import get_chat_logger
 from utils.logging import dmesg
 from utils.logging import get_dmesg_time
 from utils.logging import get_logger
-import extensions
 
 connect(
     db=MONGO_DATABASE,
@@ -31,7 +32,7 @@ dmesg('Init app', group='C')
 telebot.logger = get_logger('telegram')
 telebot.logger.setLevel(logging.DEBUG)
 
-chat_log = get_chat_logger(LOGGING_CHAT, 'main')
+chat_log = get_chat_logger(LOGGING_CHAT, 'core')
 
 
 def check_ready(update):
@@ -41,7 +42,10 @@ def check_ready(update):
     return True
 
 
-if __name__ == '__main__':
+def main():
+    locale_gen(LOCALES_PATH)
+    set_locale(DEFAULT_LOCALE)
+
     app = Flask(__name__)
 
     # Import all chat handlers
@@ -67,7 +71,8 @@ if __name__ == '__main__':
         if flask.request.headers.get('content-type') == 'application/json':
             request = flask.request.get_data().decode("utf-8")
             update = telebot.types.Update.de_json(request)
-            check_ready(update)
+            if not check_ready(update):
+                return 'sleep'
             if update.message:
                 bot.process_new_messages([update.message])
             if update.edited_message:
@@ -96,3 +101,7 @@ if __name__ == '__main__':
         bot.polling(True)
 
     chat_log.info('Bot is started. (<code>{:.3f}s</code>)'.format(get_dmesg_time()))
+
+
+if __name__ == '__main__':
+    main()

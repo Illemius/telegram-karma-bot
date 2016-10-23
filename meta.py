@@ -7,15 +7,16 @@ from pytz import timezone
 import telebot
 from config import WEBHOOK_URL, TOKEN, TIMEZONE as TZ_NAME, ROOT_UID
 
-BUILD = 'b0001'
-
-# Setup bot location
-TIMEZONE = timezone(TZ_NAME)
+BUILD = 'b0003'
 
 # Base application dir
 # Usage: os.path.join(<BASE_DIR or APP_DIR>, '<file.name>')
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 APP_DIR = os.path.dirname(os.path.realpath(sys.argv[0]))
+
+# Setup bot location
+TIMEZONE = timezone(TZ_NAME)
+LOCALES_PATH = os.path.join(APP_DIR, 'locales')
 
 # === Telegram ===
 

@@ -1,5 +1,6 @@
 snippets = (
     'helper',
+    'karma'
 )
 
 

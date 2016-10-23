@@ -1,1 +1,9 @@
-{}
+{
+  "hello {user_name}": "Привет, {user_name}!\nЯ - бот, который считает карму в чатах Telegram.",
+  "can not sent private message": "Я не могу отправить тебе личное сообщение.\nОтправь мне сообщение в ЛС.",
+  "settings": "Настройки бота:",
+  "keyboard settings sent to your private messages": "Клавиатура с настройками отправлена в личные сообщения",
+  "locale settings": "Локализация",
+  "chose locale": "Выберите локализацию",
+  "settings updated. new locale is {locale}": "Настройки обновлены.\nУстановлена локализация: {locale}"
+}

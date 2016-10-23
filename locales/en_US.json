@@ -1,0 +1,9 @@
+{
+  "hello {user_name}": "Hello {user_name}!\nI'm bot and i can tracking karma in Telegram chats.",
+  "can not sent private message": "I can't sent message to you. Plz send PM to me.",
+  "settings": "Bot settings:",
+  "keyboard settings sent to your private messages": "Keyboard with settings in your PM",
+  "locale settings": "Locale",
+  "chose locale": "Chose locale",
+  "settings updated. new locale is {locale}": "Settings is updated.\nChosen locale: {locale}"
+}

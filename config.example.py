@@ -5,9 +5,9 @@ ROOT_UID = 61043901
 LOGGING_TO_CHAT = True
 CHAT_ID = 0
 
-# Time zone settings
+# Time zone and locale settings
 TIMEZONE = 'Europe/Kiev'
-
+DEFAULT_LOCALE = 'en_US'
 
 # Debugging
 DEBUG = True

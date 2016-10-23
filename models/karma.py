@@ -1,10 +1,19 @@
 import datetime
-from mongoengine import Document, DateTimeField
+from mongoengine import *
 
 from meta import TIMEZONE
 
 
-class BaseModel(Document):
+class Karma(Document):
+    chat = IntField()
+    from_user = IntField(default=0)
+    to_user = IntField(default=0)
+
+    amount = IntField()
+    description = StringField()
+
+    rollback = BooleanField()
+
     # Logging
     creation_date = DateTimeField(default=datetime.datetime.now)
     modified_date = DateTimeField(default=datetime.datetime.now)
@@ -13,4 +22,4 @@ class BaseModel(Document):
         if not self.creation_date:
             self.creation_date = datetime.datetime.now(TIMEZONE)
         self.modified_date = datetime.datetime.now(TIMEZONE)
-        return super(BaseModel, self).save(*args, **kwargs)
+        return super(Karma, self).save(*args, **kwargs)
