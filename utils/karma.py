@@ -16,7 +16,7 @@ def generate_karma_cache():
     for karma in karma_records:
         if karma.rollback:
             continue
-        if karma.from_user:
+        if karma.from_user and karma.transfer:
             update_cached_user_karma(karma.from_user, karma.chat, -karma.amount)
         if karma.to_user:
             update_cached_user_karma(karma.to_user, karma.chat, karma.amount)
@@ -30,6 +30,11 @@ def regen_cache_for_user(user_id):
 def update_cached_user_karma(user, chat, amount):
     user_data = get_cached_user_chat(user, chat)
     update_cached_user(user, chat, {KARMA_FIELD_NAME: user_data.get(KARMA_FIELD_NAME, 0) + amount})
+
+
+def get_cached_user_karma(user, chat):
+    user_data = get_cached_user_chat(user, chat)
+    return user_data.get(KARMA_FIELD_NAME, 0)
 
 
 def karma_transaction(chat=0, from_user=0, to_user=0, amount=0, description='', transfer=True):
@@ -52,12 +57,14 @@ def karma_transaction(chat=0, from_user=0, to_user=0, amount=0, description='', 
         update_cached_user_karma(from_user_id, chat_id, -amount)
     if to_user:
         update_cached_user_karma(to_user_id, chat_id, amount)
-    karma = Karma(chat=chat_id, from_user=from_user_id, to_user=to_user_id, amount=amount, description=description)
+    karma = Karma(chat=chat_id, from_user=from_user_id, to_user=to_user_id, amount=amount,
+                  description=description, transfer=transfer)
     karma.save()
-    log_transaction(karma.pk, chat=chat, from_user=from_user, to_user=to_user, amount=amount, description=description)
+    log_transaction(karma.pk, chat=chat, from_user=from_user, to_user=to_user, amount=amount,
+                    description=description, transfer=transfer)
 
 
-def log_transaction(transaction, chat=0, from_user=0, to_user=0, amount=0, description=''):
+def log_transaction(transaction, chat=0, from_user=0, to_user=0, amount=0, description='', transfer=True):
     try:
         if type(chat) is telebot.types.Chat:
             chat = chat
@@ -88,8 +95,10 @@ def log_transaction(transaction, chat=0, from_user=0, to_user=0, amount=0, descr
 
     if from_user:
         message.append('From: {} (<code>{}</code>)'.format(get_username_or_name(from_user), from_user.id))
-        message.append(
-            '\tResult amount: <i>{}</i>'.format(get_cached_user_chat(from_user.id, chat.id).get(KARMA_FIELD_NAME, 0)))
+        if transfer:
+            message.append(
+                '\tResult amount: <i>{}</i>'.format(
+                    get_cached_user_chat(from_user.id, chat.id).get(KARMA_FIELD_NAME, 0)))
     if to_user:
         message.append('To: {} (<code>{}</code>)'.format(get_username_or_name(to_user), to_user.id))
         message.append(
