@@ -10,6 +10,7 @@ case $1 in
         git clone $TRANSLATE_LIB_URL TranslateLib
         cp config.example.py config.py
         nano config.py
+    ;;
     start)
         $PYTHON $MAIN
     ;;
