@@ -6,7 +6,7 @@ from TranslateLib import translate as _
 import telebot
 from config import LOGGING_CHAT
 from meta import bot, root_user
-from models.dialogs import Dialogs, Dialogs
+from models.dialogs import Dialogs
 from utils.chat_logger import get_chat_logger
 from utils.logging import CrashReport
 

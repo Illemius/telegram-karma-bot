@@ -12,6 +12,10 @@ DEFAULT_LOCALE = 'en_US'
 # Debugging
 DEBUG = True
 
+
+# Karma settings
+ANTI_FLOOD_TIMEOUT = 2
+
 # === WebHook ===
 # Notice: Use webhook in production.
 # If disabled - web server and statistic will be not work.

@@ -5,5 +5,10 @@
   "keyboard settings sent to your private messages": "Клавиатура с настройками отправлена в личные сообщения",
   "locale settings": "Локализация",
   "chose locale": "Выберите локализацию",
-  "settings updated. new locale is {locale}": "Настройки обновлены.\nУстановлена локализация: {locale}"
+  "settings updated. new locale is {locale}": "Настройки обновлены.\nУстановлена локализация: {locale}",
+  "{user} thanked you chatting {chat}": "{user} поблагодарил Вас в чате {chat}",
+  "{user} did not like your message in the chat {chat}": "{user} не понравилось Ваше сообщение в чате {chat}",
+  "User {user} is indifferent to your message in the chat {chat}": "Пользователь {} безразличен к вашему сообщению в чате {}",
+  "Comment: {text}": "Комментарий: {text}",
+  "anti spam karma {timeout:.0f}s": "Нельзя так часто изменять карму!\n(Доступно через {timeout:.1f}с)"
 }
