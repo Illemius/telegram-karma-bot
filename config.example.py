@@ -12,7 +12,6 @@ DEFAULT_LOCALE = 'en_US'
 # Debugging
 DEBUG = True
 
-
 # Karma settings
 ANTI_FLOOD_TIMEOUT = 2
 

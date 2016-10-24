@@ -1,5 +1,4 @@
 import logging
-
 import sys
 
 from config import LOGGING_TO_CHAT

@@ -1,6 +1,6 @@
 import sys
-
 import time
+
 from TranslateLib import translate as _
 
 import telebot
