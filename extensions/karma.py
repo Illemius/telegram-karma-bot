@@ -3,7 +3,8 @@ import time
 from TranslateLib import bool_to_str, translate as _
 
 from config import ANTI_FLOOD_TIMEOUT
-from meta import bot
+from meta import bot, bot_id
+from models.karma import Karma
 from utils import karma_votes_calculator
 from utils.cache import update_cached_user, get_cached_user_chat
 from utils.chat import crash_message, get_username_or_name, typing, get_dialog_object
@@ -13,7 +14,7 @@ generate_karma_cache()
 KARMA_CHANGE_REGEX = '^(?P<vote>[+\-]{2,})(?P<description>.+)?'
 
 
-def vote_message(message, description, amount=1):
+def vote_message(message, description='', amount=1):
     # TODO: anti spam
     if bool(message.reply_to_message) and message.reply_to_message.from_user.id != message.from_user.id:
         user_cache = get_cached_user_chat(message.from_user.id, message.chat.id)
@@ -106,6 +107,19 @@ def cmd_vote_symbols(message):
         crash_message(message)
 
 
+@bot.message_handler(func=lambda message: message.text.startswith('🍪'), content_types=['text'])
+def cmd_cookie(message):
+    try:
+        amount = 0
+        for symbol in message.text:
+            if symbol == '🍪':
+                amount += 1
+        amount = karma_votes_calculator.calculate_karma_amount(amount)
+        vote_message(message, amount=amount)
+    except:
+        crash_message(message)
+
+
 @bot.message_handler(commands=['test'])
 def cmd_test(message):
     # TODO: remove test
@@ -132,5 +146,31 @@ def cmd_statistic(message):
             user=get_username_or_name(user),
             karma=karma
         ))
+    except:
+        crash_message(message)
+
+
+@bot.message_handler(commands=['top'])
+def cmd_top(message):
+    try:
+        karma_records = Karma.objects(chat=message.chat.id)
+        users = {}
+        for karma in karma_records:
+            if karma.rollback:
+                continue
+            if karma.from_user and karma.transfer:
+                users[karma.from_user] = users.get(karma.from_user, 0) + karma.amount
+            if karma.to_user:
+                users[karma.to_user] = users.get(karma.to_user, 0) + karma.amount
+
+        text = ['Статистика:']
+
+        index = 0
+        for user, karma in sorted(users.items(), key=lambda x: x[1], reverse=True):
+            if user == bot_id:
+                continue
+            index += 1
+            text.append('{}) {}: {}'.format(index, get_username_or_name(bot.get_chat(user)), karma))
+        bot.send_message(message.chat.id, '\n'.join(text))
     except:
         crash_message(message)
