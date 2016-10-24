@@ -24,6 +24,7 @@ WEBHOOK_URL_BASE = "https://%s" % WEBHOOK_URL
 WEBHOOK_URL_PATH = "/%s" % 'webhook'
 
 bot = telebot.TeleBot(TOKEN)
+bot_id = int(TOKEN.split(':')[0])
 root_user = bot.get_chat(ROOT_UID)
 
 BOT_URL = 'https://telegram.me/'.format(bot.get_me().username)
