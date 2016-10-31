@@ -9,6 +9,9 @@ CHAT_ID = 0
 TIMEZONE = 'Europe/Kiev'
 DEFAULT_LOCALE = 'en_US'
 
+# Ignore unread messages on startup
+IGNORE_UNREAD_MESSAGES = True
+
 # Debugging
 DEBUG = True
 

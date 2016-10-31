@@ -14,7 +14,7 @@ from mongoengine import connect
 
 import extensions
 import telebot
-from config import WEBHOOK_URL, WEB_HOST, WEB_PORT, USE_WEBHOOK, LOGGING_CHAT, DEFAULT_LOCALE
+from config import WEBHOOK_URL, WEB_HOST, WEB_PORT, USE_WEBHOOK, LOGGING_CHAT, DEFAULT_LOCALE, IGNORE_UNREAD_MESSAGES
 from meta import MONGO_DATABASE, MONGO_PORT, BOT_URL, WEBHOOK_URL_PATH, bot, LOCALES_PATH
 from meta import MONGO_HOST
 from utils.chat_logger import get_chat_logger
@@ -71,7 +71,7 @@ def main():
         if flask.request.headers.get('content-type') == 'application/json':
             request = flask.request.get_data().decode("utf-8")
             update = telebot.types.Update.de_json(request)
-            if not check_ready(update):
+            if IGNORE_UNREAD_MESSAGES and not check_ready(update):
                 return 'sleep'
             if update.message:
                 bot.process_new_messages([update.message])
