@@ -1,10 +1,11 @@
 #!/bin/bash
+cd "$(dirname "$0")"
 
-PYTHON="python3"
+INIT_CMD="python3 main.py"
 PID_FILE="bot.pid"
-MAIN="main.py"
 
 TRANSLATE_LIB_URL="git@bitbucket.org:illemius/translatelib.git"
+
 case $1 in
     setup)
         git clone ${TRANSLATE_LIB_URL} TranslateLib
@@ -12,7 +13,7 @@ case $1 in
         nano config.py
     ;;
     start)
-        ${PYTHON} ${MAIN}
+        ${INIT_CMD}
     ;;
     background|bg)
         if  [ -f "$PID_FILE" ]; then
@@ -23,7 +24,7 @@ case $1 in
             fi
         fi
         echo "Run in background"
-        ${PYTHON} ${MAIN} &
+        ${INIT_CMD} &
         MyPID=$!
         echo "-> [$MyPID]"
         echo ${MyPID} > ${PID_FILE}
