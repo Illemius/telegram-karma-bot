@@ -19,3 +19,7 @@ def get_cached_user(user, default=None):
 
 def get_cached_user_chat(user, chat, default=None):
     return get_cached_user(user).get(chat, default or {})
+
+
+def reset_cache():
+    users_cache.clear()

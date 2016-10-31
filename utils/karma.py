@@ -2,7 +2,7 @@ import telebot
 from config import LOGGING_CHAT
 from meta import bot
 from models.karma import Karma
-from utils.cache import get_cached_user_chat, update_cached_user
+from utils.cache import get_cached_user_chat, update_cached_user, reset_cache
 from utils.chat import get_username_or_name
 from .chat_logger import get_chat_logger
 
@@ -110,3 +110,21 @@ def log_transaction(transaction, chat=0, from_user=0, to_user=0, amount=0, descr
     message.append('Amount: <code>{}</code>'.format(amount))
 
     log.info('\n'.join(message))
+
+
+def reset_chat_karma(chat):
+    chat_karma = Karma.objects(chat=chat.id)
+
+    counter = 0
+    for karma in chat_karma:
+        if not karma.rollback:
+            karma.revoke()
+            counter += 1
+
+    reset_cache()
+    generate_karma_cache()
+
+    log.warning('Reset karma for chat: {} (<code>{}</code>)\n'
+                '<code>{}</code> transactions'.format(chat.title or get_username_or_name(chat), chat.id,
+                                                      counter))
+    return counter

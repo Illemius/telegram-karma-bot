@@ -25,3 +25,11 @@ class Karma(Document):
             self.creation_date = datetime.datetime.now(TIMEZONE)
         self.modified_date = datetime.datetime.now(TIMEZONE)
         return super(Karma, self).save(*args, **kwargs)
+
+    def revoke(self):
+        self.rollback = True
+        self.save()
+
+    def cancel(self):
+        self.rollback = not self.rollback
+        self.save()
