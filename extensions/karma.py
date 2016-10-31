@@ -1,6 +1,8 @@
+import re
 import time
 
 from TranslateLib import bool_to_str, translate as _
+from TranslateLib import get_num_ending
 
 from config import ANTI_FLOOD_TIMEOUT
 from meta import bot, bot_id
@@ -8,7 +10,7 @@ from models.karma import Karma
 from utils import karma_votes_calculator
 from utils.cache import update_cached_user, get_cached_user_chat
 from utils.chat import crash_message, get_username_or_name, typing, get_dialog_object
-from utils.karma import generate_karma_cache, karma_transaction, get_cached_user_karma, log
+from utils.karma import generate_karma_cache, karma_transaction, get_cached_user_karma, log, reset_chat_karma
 
 generate_karma_cache()
 KARMA_CHANGE_REGEX = '^(?P<vote>[+\-]{2,})(?P<description>.+)?'
@@ -98,7 +100,17 @@ def cmd_bad(message):
     exec_vote_cmd(message, -1)
 
 
-@bot.message_handler(regexp=KARMA_CHANGE_REGEX)
+def check_karma_change_regex(message):
+    if message.content_type != 'text':
+        return False
+
+    text = message.text.replace('—', '--')
+    if re.match(KARMA_CHANGE_REGEX, text):
+        return True
+    return False
+
+
+@bot.message_handler(func=check_karma_change_regex)
 def cmd_vote_symbols(message):
     try:
         amount, description = karma_votes_calculator.parse_message(message.text)
@@ -107,7 +119,7 @@ def cmd_vote_symbols(message):
         crash_message(message)
 
 
-@bot.message_handler(func=lambda message: message.text.startswith('🍪'), content_types=['text'])
+@bot.message_handler(func=lambda message: message.content_type == 'text' and message.text.startswith('🍪'))
 def cmd_cookie(message):
     try:
         amount = 0
@@ -172,5 +184,61 @@ def cmd_top(message):
             index += 1
             text.append('{}) {}: {}'.format(index, get_username_or_name(bot.get_chat(user)), karma))
         bot.send_message(message.chat.id, '\n'.join(text))
+    except:
+        crash_message(message)
+
+
+@bot.message_handler(commands=['rs', 'reset'])
+def cmd_reset_chat(message):
+    typing(message)
+    if message.chat.type == 'private':
+        return bot.reply_to(message, _('Works only in dialogs'))
+
+    admins = [user.user.id for user in bot.get_chat_administrators(message.chat.id)]
+
+    if message.from_user.id in admins:
+        reset = reset_chat_karma(message.chat)
+        if reset:
+            bot.reply_to(message, get_num_ending(reset, ('Отменена {} транзакция.',
+                                                         'Отменено {} транзакции.',
+                                                         'Отменено {} транзакций.')).format(reset))
+        else:
+            bot.reply_to(message, 'Нечего отменять.')
+
+
+@bot.message_handler(commands=['core_stat'])
+def cmd_core_stat(message):
+    try:
+        admins = [user.user.id for user in bot.get_chat_administrators(message.chat.id)]
+
+        if message.from_user.id in admins:
+            karma_objects = Karma.objects(chat=message.chat.id)
+            transactions = 0
+            users = []
+            canceled = 0
+            canceled_amount = 0
+            amount = 0
+
+            for karma in karma_objects:
+                transactions += 1
+                amount += karma.amount
+                if karma.to_user not in users:
+                    users.append(karma.to_user)
+                if karma.from_user not in users:
+                    users.append(karma.from_user)
+                if karma.rollback:
+                    canceled += 1
+                    canceled_amount += karma.amount
+
+            bot.reply_to(
+                message,
+                'Транзакций: {} (отменено: {}, активно: {})\n'
+                'Пользователей: {}\n'
+                'Карма в чате: {} (отменено {}, активно {})\n'.format(
+                    transactions, canceled, transactions - canceled,
+                    len(users),
+                    amount, canceled_amount, amount - canceled_amount
+                )
+            )
     except:
         crash_message(message)
