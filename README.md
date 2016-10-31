@@ -13,6 +13,7 @@ Author: Alex Root Junior
 # Setup
 - `pip install requirements.txt`
 - `chmod +x bot.sh`
+- `./bot.sh setup`
 
 ### MongoDB
 
