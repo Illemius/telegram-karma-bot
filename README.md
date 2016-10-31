@@ -13,13 +13,15 @@ Author: Alex Root Junior
 # Setup
 - `pip install requirements.txt`
 - `chmod +x bot.sh`
+
 ### MongoDB
+
 #### Debian/Ubuntu
 ```
-$ sudo apt-key adv --keyserver keyserver.ubuntu.com --recv 7F0CEB10
-$ echo "deb http://repo.mongodb.org/apt/debian wheezy/mongodb-org/3.0 main" | sudo tee /etc/apt/sources.list.d/mongodb-org-3.0.list
-$ sudo apt-get update
-$ sudo apt-get install -y mongodb-org
+sudo apt-key adv --keyserver keyserver.ubuntu.com --recv 7F0CEB10
+echo "deb http://repo.mongodb.org/apt/debian wheezy/mongodb-org/3.0 main" | sudo tee /etc/apt/sources.list.d/mongodb-org-3.0.list
+sudo apt-get update
+sudo apt-get install -y mongodb-org
 ```
 Manual: https://docs.mongodb.com/v3.0/tutorial/install-mongodb-on-debian/
 
