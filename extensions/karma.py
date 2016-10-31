@@ -177,11 +177,10 @@ def cmd_top(message):
 
         text = ['Статистика:']
 
-        index = 0
-        for user, karma in sorted(users.items(), key=lambda x: x[1], reverse=True):
-            if user == bot_id:
-                continue
-            index += 1
+        if bot_id in users:
+            users.pop(bot_id)
+
+        for index, (user, karma) in enumerate(sorted(users.items(), key=lambda x: x[1], reverse=True)):
             text.append('{}) {}: {}'.format(index, get_username_or_name(bot.get_chat(user)), karma))
         bot.send_message(message.chat.id, '\n'.join(text))
     except:
