@@ -38,6 +38,9 @@ def get_cached_user_karma(user, chat):
 
 
 def karma_transaction(chat=0, from_user=0, to_user=0, amount=0, description='', transfer=True):
+    if amount == 0:
+        return False
+
     if type(chat) is telebot.types.Chat:
         chat_id = chat.id
     else:

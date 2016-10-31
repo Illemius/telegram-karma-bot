@@ -11,9 +11,10 @@ from utils import karma_votes_calculator
 from utils.cache import update_cached_user, get_cached_user_chat
 from utils.chat import crash_message, get_username_or_name, typing, get_dialog_object
 from utils.karma import generate_karma_cache, karma_transaction, get_cached_user_karma, log, reset_chat_karma
+from utils.karma_votes_calculator import KARMA_CHANGE_REGEX
 
 generate_karma_cache()
-KARMA_CHANGE_REGEX = '^(?P<vote>[+\-]{2,})(?P<description>.+)?'
+
 
 
 def vote_message(message, description='', amount=1):
@@ -180,7 +181,7 @@ def cmd_top(message):
         if bot_id in users:
             users.pop(bot_id)
 
-        for index, (user, karma) in enumerate(sorted(users.items(), key=lambda x: x[1], reverse=True)):
+        for index, (user, karma) in enumerate(sorted(users.items(), key=lambda x: x[1], reverse=True), start=1):
             text.append('{}) {}: {}'.format(index, get_username_or_name(bot.get_chat(user)), karma))
         bot.send_message(message.chat.id, '\n'.join(text))
     except:
@@ -241,3 +242,7 @@ def cmd_core_stat(message):
             )
     except:
         crash_message(message)
+
+
+        # @bot.message_handler(commands=['pay'])
+        # def

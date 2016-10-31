@@ -1,7 +1,9 @@
 import re
 
+from utils.text_utils import startswith, count
+
 COEFFICIENT = .445
-KARMA_CHANGE_REGEX = '^(?P<vote>[+\-]{2,})(?P<description>.+)?'
+KARMA_CHANGE_REGEX = '^(?P<vote>[+\-]{2,}|(?:👍🏻|👍🏼|👍🏽|👍🏾|👍🏿|👍|👎🏻|👎🏼|👎🏽|👎🏾|👎🏿|👎)+)(?P<description>.+)?'
 
 
 def read_text(text):
@@ -15,7 +17,7 @@ def read_text(text):
         modifier = params.get('vote', '0')
         description = (params.get('description') or '').strip()
     except:
-        pass
+        return '', ''
     else:
         return modifier or '', description or ''
 
@@ -28,17 +30,15 @@ def calculate_modifiers_amount(modifier):
     """
     temp = [0, 0]
 
-    for symbol in modifier:
-        if symbol == '+':
-            temp[0] += 1
-        elif symbol == '-':
-            temp[1] += 1
+    temp[0] = count(modifier, ('+', '👍'))
+    temp[1] = count(modifier, ('-', '👎'))
 
     result = temp[0] - temp[1]
-    if temp[0] > temp[1]:
-        result -= 1
-    elif temp[0] < temp[1]:
-        result += 1
+    if startswith(modifier, ('+', '-')):
+        if temp[0] > temp[1]:
+            result -= 1
+        elif temp[0] < temp[1]:
+            result += 1
     return result
 
 
