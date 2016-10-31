@@ -42,6 +42,19 @@ def calculate_modifiers_amount(modifier):
     return result
 
 
+def change_karma_calculator(skip_amount=5):
+    def decorator(func):
+        def wrapper(count):
+            if count > skip_amount:
+                return skip_amount + func(count - skip_amount)
+            return count
+
+        return wrapper
+
+    return decorator
+
+
+@change_karma_calculator(5)
 def calculate_karma_amount(count):
     """
     K = |N| ^ .445
