@@ -2,7 +2,7 @@ import telebot
 from config import LOGGING_CHAT
 from meta import bot
 from models.karma import Karma
-from utils.cache import get_cached_user_chat, update_cached_user, reset_cache
+from utils.cache import get_cached_user_chat, update_cached_user, reset_cache, users_cache
 from utils.chat import get_username_or_name
 from .chat_logger import get_chat_logger
 
@@ -35,6 +35,12 @@ def update_cached_user_karma(user, chat, amount):
 def get_cached_user_karma(user, chat):
     user_data = get_cached_user_chat(user, chat)
     return user_data.get(KARMA_FIELD_NAME, 0)
+
+
+def reset_cached_chat_karma(chat):
+    for user in users_cache:
+        if chat in user:
+            users_cache[user][chat]['karma'] = 0
 
 
 def karma_transaction(chat=0, from_user=0, to_user=0, amount=0, description='', transfer=True):
@@ -124,7 +130,8 @@ def reset_chat_karma(chat):
             karma.revoke()
             counter += 1
 
-    reset_cache()
+    # reset_cache()
+    reset_cached_chat_karma(chat)
     generate_karma_cache()
 
     log.warning('Reset karma for chat: {} (<code>{}</code>)\n'
