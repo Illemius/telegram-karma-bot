@@ -783,7 +783,7 @@ class TeleBot:
             for message_handler in handlers:
                 if self._test_message_handler(message_handler, message):
                     self._exec_task(message_handler['function'], message)
-                    break
+                    # break
 
 
 class AsyncTeleBot(TeleBot):
