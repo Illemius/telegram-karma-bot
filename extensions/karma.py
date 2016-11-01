@@ -172,7 +172,7 @@ def cmd_top(message):
             if karma.rollback:
                 continue
             if karma.from_user and karma.transfer:
-                users[karma.from_user] = users.get(karma.from_user, 0) + karma.amount
+                users[karma.from_user] = users.get(karma.from_user, 0) - karma.amount
             if karma.to_user:
                 users[karma.to_user] = users.get(karma.to_user, 0) + karma.amount
 
@@ -244,5 +244,35 @@ def cmd_core_stat(message):
         crash_message(message)
 
 
-        # @bot.message_handler(commands=['pay'])
-        # def
+@bot.message_handler(commands=['pay'])
+def cmd_pay(message):
+    try:
+        if message.chat.type == 'private':
+            return bot.reply_to(message, 'Доступно только в груповых диалогах')
+
+        if not bool(message.reply_to_message) or message.reply_to_message.from_user.id == message.from_user.id:
+            return bot.reply_to(message, 'Нельзя переводить карму себе же.')
+
+        amount_pos = 0
+        for messageEntity in message.entities:
+            if messageEntity.type == 'bot_command':
+                amount_pos = messageEntity.offset + messageEntity.length
+                break
+        amount = message.text[amount_pos:].strip()
+
+        if not amount.isdigit():
+            return bot.reply_to(message, 'Не верная сумма перевода')
+
+        amount = abs(int(amount))
+
+        if amount == 0:
+            return bot.reply_to(message, 'Сумма перевода должна біть больше нуля')
+
+        from_user_karma = get_cached_user_karma(message.from_user.id, message.chat.id)
+
+        if amount > from_user_karma:
+            return bot.reply_to(message, 'Нельзя переводить больше, чем карма отправителя.')
+
+        karma_transaction(message.chat, message.from_user, message.reply_to_message.from_user, amount, 'transfer')
+    except:
+        crash_message(message)
