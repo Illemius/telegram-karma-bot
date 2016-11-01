@@ -16,7 +16,6 @@ from utils.karma_votes_calculator import KARMA_CHANGE_REGEX
 generate_karma_cache()
 
 
-
 def vote_message(message, description='', amount=1):
     # TODO: anti spam
     if bool(message.reply_to_message) and message.reply_to_message.from_user.id != message.from_user.id:
