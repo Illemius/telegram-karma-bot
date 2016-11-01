@@ -275,3 +275,42 @@ def cmd_pay(message):
         karma_transaction(message.chat, message.from_user, message.reply_to_message.from_user, amount, 'transfer')
     except:
         crash_message(message)
+
+
+@bot.message_handler(commands=['apay'])
+def cmd_admin_pay(message):
+    try:
+        if message.from_user.id not in [user.user.id for user in bot.get_chat_administrators(message.chat.id)]:
+            return None
+
+        if message.chat.type == 'private':
+            return bot.reply_to(message, 'Доступно только в груповых диалогах')
+
+        amount_pos = 0
+        for messageEntity in message.entities:
+            if messageEntity.type == 'bot_command':
+                amount_pos = messageEntity.offset + messageEntity.length
+                break
+        amount = message.text[amount_pos:].strip()
+
+        if amount.startswith('-'):
+            minus = True
+            amount = amount.replace('-', '')
+        else:
+            minus = False
+
+        if not amount.isdigit():
+            return bot.reply_to(message, 'Не верная сумма перевода')
+
+        amount = -int(amount) if minus else int(amount)
+
+        karma_transaction(message.chat, message.from_user, message.reply_to_message.from_user, amount,
+                          'admin transfer', transfer=False)
+    except:
+        crash_message(message)
+
+
+@bot.message_handler()
+def cmd_messages_counter(message):
+    # log.info('=>\tMESSAGE ' + message.text)
+    pass
