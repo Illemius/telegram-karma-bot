@@ -33,3 +33,21 @@ class Karma(Document):
     def cancel(self):
         self.rollback = not self.rollback
         self.save()
+
+    @classmethod
+    def get_chat(cls, chat_id):
+        return Karma.objects(chat=chat_id)
+
+    @classmethod
+    def get_chat_karma(cls, chat_id):
+        karma_records = Karma.get_chat(chat_id)
+        print(len(karma_records))
+        result = {}
+        for karma in karma_records:
+            if karma.rollback:
+                continue
+            if karma.from_user and karma.transfer:
+                result[karma.from_user] = result.get(karma.from_user, 0) - karma.amount
+            if karma.to_user:
+                result[karma.to_user] = result.get(karma.to_user, 0) + karma.amount
+        return result
