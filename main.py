@@ -17,6 +17,7 @@ import telebot
 from config import WEBHOOK_URL, WEB_HOST, WEB_PORT, USE_WEBHOOK, LOGGING_CHAT, DEFAULT_LOCALE, IGNORE_UNREAD_MESSAGES
 from meta import MONGO_DATABASE, MONGO_PORT, BOT_URL, WEBHOOK_URL_PATH, bot, LOCALES_PATH
 from meta import MONGO_HOST
+from models.messages import Messages
 from utils.chat_logger import get_chat_logger
 from utils.logging import dmesg
 from utils.logging import get_dmesg_time
@@ -63,17 +64,13 @@ def main():
     # Process webhook calls
     @app.route(WEBHOOK_URL_PATH, methods=['POST'])
     def webhook():
-        """
-        Base of webhook
-        :return:
-        """
-        # TODO: NEED MORE LOGS
         if flask.request.headers.get('content-type') == 'application/json':
             request = flask.request.get_data().decode("utf-8")
             update = telebot.types.Update.de_json(request)
             if IGNORE_UNREAD_MESSAGES and not check_ready(update):
                 return 'sleep'
             if update.message:
+                Messages.add(update.message.chat.id, update.message.from_user.id, update.message.content_type)
                 bot.process_new_messages([update.message])
             if update.edited_message:
                 bot.process_new_edited_messages([update.edited_message])
