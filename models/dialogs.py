@@ -10,11 +10,13 @@ class Dialogs(Document):
     # Key
     index = IntField()
 
-    # Settings
+    # Dialog settings
     locale = StringField(default=DEFAULT_LOCALE)
+    admin = BooleanField(default=False)
+
+    # For users
     default_dialog = IntField()
     subscribe = BooleanField(default=False)
-    admin = BooleanField(default=False)
 
     # Logging
     creation_date = DateTimeField(default=datetime.datetime.now)
