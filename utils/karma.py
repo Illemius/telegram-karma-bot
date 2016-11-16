@@ -38,7 +38,7 @@ def get_cached_user_karma(user, chat):
 
 
 def reset_cached_chat_karma(chat):
-    for user in users_cache:
+    for user_id, user in users_cache.items():
         if chat in user:
             users_cache[user][chat]['karma'] = 0
 
