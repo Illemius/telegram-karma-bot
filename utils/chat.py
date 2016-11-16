@@ -32,6 +32,23 @@ def get_username_or_name(user):
     return '@' + user.username
 
 
+def get_chat_url(message, to_message=False):
+    if to_message:
+        url = get_chat_url(message, to_message=False)
+        if url:
+            return url + '/' + str(message.message_id)
+    if message.chat.username:
+        return 'https://telegram.me/' + message.chat.username
+    return None
+
+
+def get_chat_url_or_title(message):
+    url = get_chat_url(message, True)
+    if url:
+        return '[{}]({})'.format(message.chat.title, url)
+    return message.chat.title
+
+
 def cant_send_private(message, locale=None):
     bot.reply_to(message, _('can not sent private message', locale=locale))
 

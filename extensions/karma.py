@@ -1,5 +1,7 @@
 import re
 import time
+import sys
+from datetime import datetime, timedelta
 
 from TranslateLib import bool_to_str, translate as _
 from TranslateLib import get_num_ending
@@ -10,12 +12,10 @@ from models.karma import Karma
 from models.messages import Messages
 from utils import karma_votes_calculator
 from utils.cache import update_cached_user, get_cached_user_chat
-from utils.chat import crash_message, get_username_or_name, typing, get_dialog_object
+from utils.chat import crash_message, get_username_or_name, typing, get_dialog_object, get_chat_url_or_title
 from utils.karma import generate_karma_cache, karma_transaction, get_cached_user_karma, log, reset_chat_karma
 from utils.karma_votes_calculator import KARMA_CHANGE_REGEX
-
-
-from datetime import datetime, timedelta
+from utils.logging import CrashReport
 
 generate_karma_cache()
 
@@ -69,9 +69,9 @@ def vote_message(message, description='', amount=1):
                     text += '\n' + _('Comment: {text}')
                 bot.send_message(message.reply_to_message.from_user.id, text.format(
                     user=get_username_or_name(message.from_user),
-                    chat=message.reply_to_message.chat.title,
+                    chat=get_chat_url_or_title(message),
                     text=description
-                ), disable_web_page_preview=True)
+                ), disable_web_page_preview=True, parse_mode='markdown')
                 bot.forward_message(message.reply_to_message.from_user.id,
                                     message.chat.id, message.reply_to_message.message_id,
                                     disable_notification=True)
@@ -313,9 +313,3 @@ def cmd_messages_count(message):
         bot.send_message(message.chat.id, '\n'.join(text))
     except:
         crash_message(message)
-
-
-# @bot.message_handler()
-# def cmd_messages_counter(message):
-#     Messages.add(message.chat.id, message.from_user.id, message.content_type)
-
