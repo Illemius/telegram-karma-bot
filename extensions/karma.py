@@ -5,13 +5,17 @@ from TranslateLib import bool_to_str, translate as _
 from TranslateLib import get_num_ending
 
 from config import ANTI_FLOOD_TIMEOUT
-from meta import bot, bot_id
+from meta import bot, bot_id, TIMEZONE
 from models.karma import Karma
+from models.messages import Messages
 from utils import karma_votes_calculator
 from utils.cache import update_cached_user, get_cached_user_chat
 from utils.chat import crash_message, get_username_or_name, typing, get_dialog_object
 from utils.karma import generate_karma_cache, karma_transaction, get_cached_user_karma, log, reset_chat_karma
 from utils.karma_votes_calculator import KARMA_CHANGE_REGEX
+
+
+from datetime import datetime, timedelta
 
 generate_karma_cache()
 
@@ -119,30 +123,6 @@ def cmd_vote_symbols(message):
         crash_message(message)
 
 
-@bot.message_handler(func=lambda message: message.content_type == 'text' and message.text.startswith('🍪'))
-def cmd_cookie(message):
-    try:
-        amount = 0
-        for symbol in message.text:
-            if symbol == '🍪':
-                amount += 1
-        amount = karma_votes_calculator.calculate_karma_amount(amount)
-        vote_message(message, amount=amount)
-    except:
-        crash_message(message)
-
-
-@bot.message_handler(commands=['test'])
-def cmd_test(message):
-    # TODO: remove test
-    try:
-        bot.send_message(message.chat.id, 'ok')
-        karma_transaction(message.chat, 0, message.from_user, 10, 'test transaction')
-        # bot.send_message(message.chat.id, json.dumps(users_cache, indent=4, separators=[', ', ': ']))
-    except:
-        crash_message(message)
-
-
 @bot.message_handler(commands=['stat'])
 def cmd_statistic(message):
     typing(message)
@@ -181,6 +161,8 @@ def cmd_top(message):
             users.pop(bot_id)
 
         for index, (user, karma) in enumerate(sorted(users.items(), key=lambda x: x[1], reverse=True), start=1):
+            if index > 10:
+                break
             text.append('{}) {}: {}'.format(index, get_username_or_name(bot.get_chat(user)), karma))
         bot.send_message(message.chat.id, '\n'.join(text))
     except:
@@ -189,20 +171,23 @@ def cmd_top(message):
 
 @bot.message_handler(commands=['rs', 'reset'])
 def cmd_reset_chat(message):
-    typing(message)
-    if message.chat.type == 'private':
-        return bot.reply_to(message, _('Works only in dialogs'))
+    try:
+        typing(message)
+        if message.chat.type == 'private':
+            return bot.reply_to(message, _('Works only in dialogs'))
 
-    admins = [user.user.id for user in bot.get_chat_administrators(message.chat.id)]
+        admins = [user.user.id for user in bot.get_chat_administrators(message.chat.id)]
 
-    if message.from_user.id in admins:
-        reset = reset_chat_karma(message.chat)
-        if reset:
-            bot.reply_to(message, get_num_ending(reset, ('Отменена {} транзакция.',
-                                                         'Отменено {} транзакции.',
-                                                         'Отменено {} транзакций.')).format(reset))
-        else:
-            bot.reply_to(message, 'Нечего отменять.')
+        if message.from_user.id in admins:
+            reset = reset_chat_karma(message.chat)
+            if reset:
+                bot.reply_to(message, get_num_ending(reset, ('Отменена {} транзакция.',
+                                                             'Отменено {} транзакции.',
+                                                             'Отменено {} транзакций.')).format(reset))
+            else:
+                bot.reply_to(message, 'Нечего отменять.')
+    except:
+        crash_message(message)
 
 
 @bot.message_handler(commands=['core_stat'])
@@ -280,11 +265,11 @@ def cmd_pay(message):
 @bot.message_handler(commands=['apay'])
 def cmd_admin_pay(message):
     try:
-        if message.from_user.id not in [user.user.id for user in bot.get_chat_administrators(message.chat.id)]:
-            return None
-
         if message.chat.type == 'private':
             return bot.reply_to(message, 'Доступно только в груповых диалогах')
+
+        if message.from_user.id not in [user.user.id for user in bot.get_chat_administrators(message.chat.id)]:
+            return None
 
         amount_pos = 0
         for messageEntity in message.entities:
@@ -310,7 +295,27 @@ def cmd_admin_pay(message):
         crash_message(message)
 
 
-@bot.message_handler()
-def cmd_messages_counter(message):
-    # log.info('=>\tMESSAGE ' + message.text)
-    pass
+@bot.message_handler(commands=['messages_count'])
+def cmd_messages_count(message):
+    try:
+        date = datetime.now(TIMEZONE) - timedelta(days=1)
+        users = Messages.calculate(message.chat.id, date)
+
+        text = ['Топ флудеров за последние 24 часа:']
+
+        if bot_id in users:
+            users.pop(bot_id)
+
+        for index, (user, karma) in enumerate(sorted(users.items(), key=lambda x: x[1], reverse=True), start=1):
+            if index > 10:
+                break
+            text.append('{}) {}: {} сбщ.'.format(index, get_username_or_name(bot.get_chat(user)), karma))
+        bot.send_message(message.chat.id, '\n'.join(text))
+    except:
+        crash_message(message)
+
+
+# @bot.message_handler()
+# def cmd_messages_counter(message):
+#     Messages.add(message.chat.id, message.from_user.id, message.content_type)
+
