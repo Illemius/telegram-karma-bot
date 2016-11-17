@@ -92,13 +92,11 @@ def exec_vote_cmd(message, amount):
 
 @bot.message_handler(commands=['good', 'tnx', 'thanks'])
 def cmd_tnx(message):
-    typing(message)
     exec_vote_cmd(message, 1)
 
 
 @bot.message_handler(commands=['bad'])
 def cmd_bad(message):
-    typing(message)
     exec_vote_cmd(message, -1)
 
 
@@ -121,10 +119,10 @@ def cmd_vote_symbols(message):
         crash_message(message)
 
 
-@bot.message_handler(commands=['stat'])
+@bot.message_handler(commands=['sttistic', 'stat'])
 def cmd_statistic(message):
-    typing(message)
     try:
+        typing(message)
         if bool(message.reply_to_message):
             user = message.reply_to_message.from_user
         else:
@@ -143,6 +141,7 @@ def cmd_statistic(message):
 @bot.message_handler(commands=['top'])
 def cmd_top(message):
     try:
+        typing(message)
         karma_records = Karma.objects(chat=message.chat.id)
         users = {}
         for karma in karma_records:
@@ -191,6 +190,7 @@ def cmd_reset_chat(message):
 @bot.message_handler(commands=['core_stat'])
 def cmd_core_stat(message):
     try:
+        typing(message)
         admins = [user.user.id for user in bot.get_chat_administrators(message.chat.id)]
 
         if message.from_user.id in admins:
@@ -229,6 +229,7 @@ def cmd_core_stat(message):
 @bot.message_handler(commands=['pay'])
 def cmd_pay(message):
     try:
+        typing(message)
         if message.chat.type == 'private':
             return bot.reply_to(message, 'Доступно только в груповых диалогах')
 
@@ -269,6 +270,8 @@ def cmd_admin_pay(message):
         if message.from_user.id not in [user.user.id for user in bot.get_chat_administrators(message.chat.id)]:
             return None
 
+        typing(message)
+
         amount_pos = 0
         for messageEntity in message.entities:
             if messageEntity.type == 'bot_command':
@@ -296,6 +299,7 @@ def cmd_admin_pay(message):
 @bot.message_handler(commands=['messages_count'])
 def cmd_messages_count(message):
     try:
+        typing(message)
         date = datetime.now(TIMEZONE) - timedelta(days=1)
         users = Messages.calculate(message.chat.id, date)
 
