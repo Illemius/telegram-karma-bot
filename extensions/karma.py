@@ -1,6 +1,5 @@
 import re
 import time
-import sys
 from datetime import datetime, timedelta
 
 from TranslateLib import bool_to_str, translate as _
@@ -15,7 +14,6 @@ from utils.cache import update_cached_user, get_cached_user_chat
 from utils.chat import crash_message, get_username_or_name, typing, get_dialog_object, get_chat_url_or_title
 from utils.karma import generate_karma_cache, karma_transaction, get_cached_user_karma, log, reset_chat_karma
 from utils.karma_votes_calculator import KARMA_CHANGE_REGEX
-from utils.logging import CrashReport
 
 generate_karma_cache()
 
