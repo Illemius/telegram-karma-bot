@@ -54,7 +54,7 @@ def vote_message(message, description='', amount=1):
                           transfer=False)
         user = get_dialog_object(message.reply_to_message.from_user.id)
 
-        if user.subscribe or True:
+        if user.subscribe:
             try:
                 if amount > 0:
                     text = _('{user} thanked you chatting {chat}', locale=user.locale)

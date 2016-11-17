@@ -2,6 +2,7 @@ from TranslateLib import translate as _, get_locales_list, get_locale
 
 import telebot
 from meta import bot
+from models.dialogs import Dialogs
 from utils.chat import ParseUserData, get_username_or_name, typing, cant_send_private, generate_inline_data, \
     crash_message, parse_inline_data, get_dialog_object
 
@@ -72,3 +73,46 @@ def query_settings(callbackquery):
             return
     except:
         crash_message(callbackquery.message)
+
+
+@bot.message_handler(commands=['subscribe'])
+def cmd_subscribe(message):
+    try:
+        user_objects = Dialogs.objects(index=message.from_user.id)
+        if len(user_objects) > 0:
+            user = user_objects[0]
+        else:
+            user = Dialogs(index=message.from_user.id)
+
+        if not user.subscribe:
+            user.subscribe = True
+            user.save()
+            try:
+                bot.send_message(message.from_user.id, 'Теперь Вам будут приходить уведомления об изменении кармы.')
+                if message.location != 'private':
+                    bot.reply_to(message, 'Теперь Вам будут приходить уведомления об изменении кармы.')
+            except:
+                bot.reply_to(message, 'Сначала напиши мне в ЛС.')
+        else:
+            bot.reply_to(message, 'Вы уже подписаны на уведомления об изменении кармы.')
+    except:
+        crash_message(message)
+
+
+@bot.message_handler(commands=['unsubscribe'])
+def cmd_unsubscribe(message):
+    try:
+        user_objects = Dialogs.objects(index=message.from_user.id)
+        if len(user_objects) > 0:
+            user = user_objects[0]
+        else:
+            user = Dialogs(index=message.from_user.id)
+            user.save()
+        if user.subscribe:
+            user.subscribe = False
+            user.save()
+            bot.reply_to(message, 'Вы отписались от уведомлений об изменении кармы.')
+        else:
+            bot.reply_to(message, 'Вы не подписаны на уведомления об изменении кармы.')
+    except:
+        crash_message(message)
