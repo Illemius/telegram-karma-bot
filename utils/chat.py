@@ -4,7 +4,7 @@ import time
 from TranslateLib import translate as _
 
 import telebot
-from config import LOGGING_CHAT
+from config import LOGGING_CHAT, ROOT_UID
 from meta import bot, root_user
 from models.dialogs import Dialogs
 from utils.chat_logger import get_chat_logger
@@ -21,6 +21,17 @@ def typing(message, timeout=.5):
     else:
         chat_id = message.chat.id
     bot.send_chat_action(chat_id, 'typing')
+
+
+def sender_is_admin(message):
+    if message.chat.type == 'private':
+        return False
+
+    if message.from_user.id == ROOT_UID or \
+                    message.from_user.id not in [user.user.id for user in
+                                                 bot.get_chat_administrators(message.chat.id)]:
+        return True
+    return False
 
 
 def get_username_or_name(user):

@@ -11,7 +11,8 @@ from models.karma import Karma
 from models.messages import Messages
 from utils import karma_votes_calculator
 from utils.cache import update_cached_user, get_cached_user_chat
-from utils.chat import crash_message, get_username_or_name, typing, get_dialog_object, get_chat_url_or_title
+from utils.chat import crash_message, get_username_or_name, typing, get_dialog_object, get_chat_url_or_title, \
+    sender_is_admin
 from utils.karma import generate_karma_cache, karma_transaction, get_cached_user_karma, log, reset_chat_karma
 from utils.karma_votes_calculator import KARMA_CHANGE_REGEX
 
@@ -173,16 +174,16 @@ def cmd_reset_chat(message):
         if message.chat.type == 'private':
             return bot.reply_to(message, _('Works only in dialogs'))
 
-        admins = [user.user.id for user in bot.get_chat_administrators(message.chat.id)]
+        if not sender_is_admin(message):
+            pass
 
-        if message.from_user.id in admins:
-            reset = reset_chat_karma(message.chat)
-            if reset:
-                bot.reply_to(message, get_num_ending(reset, ('Отменена {} транзакция.',
-                                                             'Отменено {} транзакции.',
-                                                             'Отменено {} транзакций.')).format(reset))
-            else:
-                bot.reply_to(message, 'Нечего отменять.')
+        reset = reset_chat_karma(message.chat)
+        if reset:
+            bot.reply_to(message, get_num_ending(reset, ('Отменена {} транзакция.',
+                                                         'Отменено {} транзакции.',
+                                                         'Отменено {} транзакций.')).format(reset))
+        else:
+            bot.reply_to(message, 'Нечего отменять.')
     except:
         crash_message(message)
 
@@ -191,37 +192,37 @@ def cmd_reset_chat(message):
 def cmd_core_stat(message):
     try:
         typing(message)
-        admins = [user.user.id for user in bot.get_chat_administrators(message.chat.id)]
+        if not sender_is_admin(message):
+            pass
 
-        if message.from_user.id in admins:
-            karma_objects = Karma.objects(chat=message.chat.id)
-            transactions = 0
-            users = []
-            canceled = 0
-            canceled_amount = 0
-            amount = 0
+        karma_objects = Karma.objects(chat=message.chat.id)
+        transactions = 0
+        users = []
+        canceled = 0
+        canceled_amount = 0
+        amount = 0
 
-            for karma in karma_objects:
-                transactions += 1
-                amount += karma.amount
-                if karma.to_user not in users:
-                    users.append(karma.to_user)
-                if karma.from_user not in users:
-                    users.append(karma.from_user)
-                if karma.rollback:
-                    canceled += 1
-                    canceled_amount += karma.amount
+        for karma in karma_objects:
+            transactions += 1
+            amount += karma.amount
+            if karma.to_user not in users:
+                users.append(karma.to_user)
+            if karma.from_user not in users:
+                users.append(karma.from_user)
+            if karma.rollback:
+                canceled += 1
+                canceled_amount += karma.amount
 
-            bot.reply_to(
-                message,
-                'Транзакций: {} (отменено: {}, активно: {})\n'
-                'Пользователей: {}\n'
-                'Карма в чате: {} (отменено {}, активно {})\n'.format(
-                    transactions, canceled, transactions - canceled,
-                    len(users),
-                    amount, canceled_amount, amount - canceled_amount
-                )
+        bot.reply_to(
+            message,
+            'Транзакций: {} (отменено: {}, активно: {})\n'
+            'Пользователей: {}\n'
+            'Карма в чате: {} (отменено {}, активно {})\n'.format(
+                transactions, canceled, transactions - canceled,
+                len(users),
+                amount, canceled_amount, amount - canceled_amount
             )
+        )
     except:
         crash_message(message)
 
@@ -264,10 +265,10 @@ def cmd_pay(message):
 @bot.message_handler(commands=['apay'])
 def cmd_admin_pay(message):
     try:
-        if message.chat.type == 'private':
-            return bot.reply_to(message, 'Доступно только в груповых диалогах')
+        if not sender_is_admin(message):
+            pass
 
-        if message.from_user.id not in [user.user.id for user in bot.get_chat_administrators(message.chat.id)]:
+        if not bool(message.reply_to_message):
             return None
 
         typing(message)
