@@ -1,10 +1,8 @@
-from TranslateLib import translate as _, get_locales_list, get_locale
+from TranslateLib import translate as _
 
-import telebot
 from meta import bot
 from models.dialogs import Dialogs
-from utils.chat import ParseUserData, get_username_or_name, typing, cant_send_private, generate_inline_data, \
-    crash_message, parse_inline_data, get_dialog_object
+from utils.chat import ParseUserData, get_username_or_name, typing, crash_message
 
 
 @bot.message_handler(commands=['help'])
@@ -21,6 +19,7 @@ def cmd_start(message, user, chat):
                          .format(user_name=get_username_or_name(message.from_user)))
 
 
+"""
 @bot.message_handler(commands=['settings'])
 @ParseUserData
 def cmd_settings(message, user, chat):
@@ -73,6 +72,7 @@ def query_settings(callbackquery):
             return
     except:
         crash_message(callbackquery.message)
+"""
 
 
 @bot.message_handler(commands=['subscribe'])
