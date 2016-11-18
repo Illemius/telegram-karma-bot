@@ -23,13 +23,15 @@ def typing(message, timeout=.5):
     bot.send_chat_action(chat_id, 'typing')
 
 
-def sender_is_admin(message):
-    if message.chat.type == 'private':
-        return False
+def is_private(message):
+    if hasattr(message, 'chat'):
+        if message.chat.type == 'private':
+            return True
+    return False
 
-    if message.from_user.id == ROOT_UID or \
-                    message.from_user.id not in [user.user.id for user in
-                                                 bot.get_chat_administrators(message.chat.id)]:
+
+def sender_is_admin(chat_id, user_id):
+    if user_id == ROOT_UID or user_id in [user.user.id for user in bot.get_chat_administrators(chat_id)]:
         return True
     return False
 

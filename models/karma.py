@@ -35,6 +35,13 @@ class Karma(Document):
         self.save()
 
     @classmethod
+    def get_transaction(cls, transaction):
+        transactions = Karma.objects(id=transaction)
+        if len(transactions) > 0:
+            return transactions[0]
+        return None
+
+    @classmethod
     def get_chat(cls, chat_id):
         return Karma.objects(chat=chat_id)
 

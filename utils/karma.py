@@ -2,8 +2,8 @@ import telebot
 from config import LOGGING_CHAT
 from meta import bot
 from models.karma import Karma
-from utils.cache import get_cached_user_chat, update_cached_user, reset_cache, users_cache
-from utils.chat import get_username_or_name
+from utils.cache import get_cached_user_chat, update_cached_user, users_cache
+from utils.chat import get_username_or_name, generate_inline_data
 from .chat_logger import get_chat_logger
 
 log = get_chat_logger(LOGGING_CHAT, 'karma')
@@ -98,7 +98,7 @@ def log_transaction(transaction, chat=0, from_user=0, to_user=0, amount=0, descr
     except:
         to_user = None
 
-    message = ['#Transaction ID: <b>{}</b>'.format(transaction)]
+    message = ['#karma #INFO #Transaction ID: <b>{}</b>'.format(transaction)]
     if chat:
         message.append('Dialog: {} (<code>{}</code>)'.format(chat.title or get_username_or_name(chat), chat.id))
 
@@ -118,7 +118,11 @@ def log_transaction(transaction, chat=0, from_user=0, to_user=0, amount=0, descr
     message.append('Description: <code>{}</code>'.format(description))
     message.append('Amount: <code>{}</code>'.format(amount))
 
-    log.info('\n'.join(message))
+    markup = telebot.types.InlineKeyboardMarkup()
+    markup.add(telebot.types.InlineKeyboardButton(
+        'Cancel', callback_data=generate_inline_data('CANCEL_TRANSACTION', [str(transaction)])))
+    bot.send_message(LOGGING_CHAT, '\n'.join(message), parse_mode='html', reply_markup=markup)
+    # log.info('\n'.join(message))
 
 
 def reset_chat_karma(chat):

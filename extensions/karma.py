@@ -1,4 +1,5 @@
 import re
+import sys
 import time
 from datetime import datetime, timedelta
 
@@ -12,9 +13,10 @@ from models.messages import Messages
 from utils import karma_votes_calculator
 from utils.cache import update_cached_user, get_cached_user_chat
 from utils.chat import crash_message, get_username_or_name, typing, get_dialog_object, get_chat_url_or_title, \
-    sender_is_admin
+    sender_is_admin, parse_inline_data, is_private
 from utils.karma import generate_karma_cache, karma_transaction, get_cached_user_karma, log, reset_chat_karma
 from utils.karma_votes_calculator import KARMA_CHANGE_REGEX
+from utils.logging import CrashReport
 
 generate_karma_cache()
 
@@ -89,6 +91,36 @@ def exec_vote_cmd(message, amount):
         vote_message(message, description, amount)
     except:
         return crash_message(message)
+
+
+@bot.callback_query_handler(func=lambda callbackquery: parse_inline_data(callbackquery.data)[0] == 'CANCEL_TRANSACTION')
+def query_settings(callbackquery):
+    try:
+        key, data = parse_inline_data(callbackquery.data)
+
+        karma = Karma.get_transaction(data[0])
+        if karma:
+            if not sender_is_admin(karma.chat, callbackquery.from_user.id):
+                return bot.answer_callback_query(callbackquery.id, 'You shall not pass!')
+
+            karma.cancel()
+            if karma.rollback:
+                bot.answer_callback_query(callbackquery.id, 'Transaction ' + data[0] + ' is canceled!')
+                bot.send_message(
+                    callbackquery.message.chat.id,
+                    '#karma #WARNING #Transaction\nCanceled: {}\nby {} ({})'.format(
+                        data[0], get_username_or_name(callbackquery.from_user), callbackquery.from_user.id))
+            else:
+                bot.answer_callback_query(callbackquery.id, 'Transaction ' + data[0] + ' is activated!')
+                bot.send_message(
+                    callbackquery.message.chat.id,
+                    '#karma #WARNING #Transaction\nRestored: {}\nby {} ({})'.format(
+                        data[0], get_username_or_name(callbackquery.from_user), callbackquery.from_user.id))
+        bot.answer_callback_query(callbackquery.id, 'Wrong transaction!')
+    except:
+        with CrashReport(*sys.exc_info()) as c:
+            log.warning(c.formatted_traceback)
+            c.save()
 
 
 @bot.message_handler(commands=['good', 'tnx', 'thanks'])
@@ -171,11 +203,8 @@ def cmd_top(message):
 def cmd_reset_chat(message):
     try:
         typing(message)
-        if message.chat.type == 'private':
-            return bot.reply_to(message, _('Works only in dialogs'))
-
-        if not sender_is_admin(message):
-            pass
+        if is_private(message) or not sender_is_admin(message.chat.id, message.from_user.id):
+            return None
 
         reset = reset_chat_karma(message.chat)
         if reset:
@@ -191,9 +220,9 @@ def cmd_reset_chat(message):
 @bot.message_handler(commands=['core_stat'])
 def cmd_core_stat(message):
     try:
+        if is_private(message) or not sender_is_admin(message.chat.id, message.from_user.id):
+            return None
         typing(message)
-        if not sender_is_admin(message):
-            pass
 
         karma_objects = Karma.objects(chat=message.chat.id)
         transactions = 0
@@ -265,8 +294,8 @@ def cmd_pay(message):
 @bot.message_handler(commands=['apay'])
 def cmd_admin_pay(message):
     try:
-        if not sender_is_admin(message):
-            pass
+        if is_private(message) or not sender_is_admin(message.chat.id, message.from_user.id):
+            return None
 
         if not bool(message.reply_to_message):
             return None
