@@ -120,7 +120,7 @@ def cmd_vote_symbols(message):
         crash_message(message)
 
 
-@bot.message_handler(commands=['sttistic', 'stat'])
+@bot.message_handler(commands=['statistic', 'stat'])
 def cmd_statistic(message):
     try:
         typing(message)
@@ -297,7 +297,7 @@ def cmd_admin_pay(message):
         crash_message(message)
 
 
-@bot.message_handler(commands=['messages_count'])
+@bot.message_handler(commands=['messages'])
 def cmd_messages_count(message):
     try:
         typing(message)
