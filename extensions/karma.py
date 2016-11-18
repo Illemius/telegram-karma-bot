@@ -194,7 +194,7 @@ def cmd_top(message):
             if index > 10:
                 break
             text.append('{}) {}: {}'.format(index, get_username_or_name(bot.get_chat(user)), karma))
-        bot.send_message(message.chat.id, '\n'.join(text))
+        bot.send_message(message.chat.id, '\n'.join(text), disable_notification=True)
     except:
         crash_message(message)
 
@@ -342,6 +342,6 @@ def cmd_messages_count(message):
             if index > 10:
                 break
             text.append('{}) {}: {} сбщ.'.format(index, get_username_or_name(bot.get_chat(user)), karma))
-        bot.send_message(message.chat.id, '\n'.join(text))
+        bot.send_message(message.chat.id, '\n'.join(text), disable_notification=True)
     except:
         crash_message(message)
