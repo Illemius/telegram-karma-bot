@@ -123,7 +123,7 @@ def query_settings(callbackquery):
             c.save()
 
 
-@bot.message_handler(commands=['good', 'tnx', 'thanks'])
+@bot.message_handler(commands=['like', 'good', 'tnx', 'thanks'])
 def cmd_tnx(message):
     exec_vote_cmd(message, 1)
 
