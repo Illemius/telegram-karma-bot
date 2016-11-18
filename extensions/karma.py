@@ -108,13 +108,13 @@ def query_settings(callbackquery):
                 bot.answer_callback_query(callbackquery.id, 'Transaction ' + data[0] + ' is canceled!')
                 bot.send_message(
                     callbackquery.message.chat.id,
-                    '#karma #WARNING #Transaction\nCanceled: {}\nby {} ({})'.format(
+                    '#karma #WARNING #Transaction\nCanceled: #{}\nby {} ({})'.format(
                         data[0], get_username_or_name(callbackquery.from_user), callbackquery.from_user.id))
             else:
                 bot.answer_callback_query(callbackquery.id, 'Transaction ' + data[0] + ' is activated!')
                 bot.send_message(
                     callbackquery.message.chat.id,
-                    '#karma #WARNING #Transaction\nRestored: {}\nby {} ({})'.format(
+                    '#karma #WARNING #Transaction\nRestored: #{}\nby {} ({})'.format(
                         data[0], get_username_or_name(callbackquery.from_user), callbackquery.from_user.id))
         bot.answer_callback_query(callbackquery.id, 'Wrong transaction!')
     except:

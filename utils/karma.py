@@ -98,7 +98,7 @@ def log_transaction(transaction, chat=0, from_user=0, to_user=0, amount=0, descr
     except:
         to_user = None
 
-    message = ['#karma #INFO #Transaction ID: <b>{}</b>'.format(transaction)]
+    message = ['#karma #INFO #Transaction ID: #{}'.format(transaction)]
     if chat:
         message.append('Dialog: {} (<code>{}</code>)'.format(chat.title or get_username_or_name(chat), chat.id))
 
