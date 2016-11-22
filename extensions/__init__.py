@@ -1,6 +1,7 @@
 snippets = (
+#     'fix_utils',
     'helper',
-    'karma'
+    'karma',
 )
 
 

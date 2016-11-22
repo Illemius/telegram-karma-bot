@@ -70,7 +70,8 @@ def main():
             if IGNORE_UNREAD_MESSAGES and not check_ready(update):
                 return 'sleep'
             if update.message:
-                Messages.add(update.message.chat.id, update.message.from_user.id, update.message.content_type)
+                Messages.add(update.message.chat.id, update.message.from_user.id,
+                             update.message.content_type, update.message.text)
                 bot.process_new_messages([update.message])
             if update.edited_message:
                 bot.process_new_edited_messages([update.edited_message])
