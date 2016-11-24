@@ -6,15 +6,17 @@ from datetime import datetime, timedelta
 from TranslateLib import bool_to_str, translate as _
 from TranslateLib import get_num_ending
 
-from config import ANTI_FLOOD_TIMEOUT
+from config import ANTI_FLOOD_TIMEOUT, LOGGING_CHAT
 from meta import bot, bot_id, TIMEZONE
+from models.dialogs import AdminSubscribe
 from models.karma import Karma
 from models.messages import Messages
 from utils import karma_votes_calculator
 from utils.cache import update_cached_user, get_cached_user_chat
 from utils.chat import crash_message, get_username_or_name, typing, get_dialog_object, get_chat_url_or_title, \
     sender_is_admin, parse_inline_data, is_private
-from utils.karma import generate_karma_cache, karma_transaction, get_cached_user_karma, log, reset_chat_karma
+from utils.karma import generate_karma_cache, karma_transaction, get_cached_user_karma, log, reset_chat_karma, \
+    notify_chat_admins
 from utils.karma_votes_calculator import KARMA_CHANGE_REGEX
 from utils.logging import CrashReport
 
@@ -106,16 +108,17 @@ def query_settings(callbackquery):
             karma.cancel()
             if karma.rollback:
                 bot.answer_callback_query(callbackquery.id, 'Transaction ' + data[0] + ' is canceled!')
-                bot.send_message(
-                    callbackquery.message.chat.id,
-                    '#karma #WARNING #Transaction\nCanceled: #{}\nby {} ({})'.format(
-                        data[0], get_username_or_name(callbackquery.from_user), callbackquery.from_user.id))
+                text = '#karma #WARNING #Transaction\nCanceled: #{}\nby {} ({})'.format(
+                    data[0], get_username_or_name(callbackquery.from_user), callbackquery.from_user.id)
+                bot.send_message(LOGGING_CHAT, text)
+                notify_chat_admins(karma.chat, text)
             else:
                 bot.answer_callback_query(callbackquery.id, 'Transaction ' + data[0] + ' is activated!')
-                bot.send_message(
-                    callbackquery.message.chat.id,
-                    '#karma #WARNING #Transaction\nRestored: #{}\nby {} ({})'.format(
-                        data[0], get_username_or_name(callbackquery.from_user), callbackquery.from_user.id))
+                text = '#karma #WARNING #Transaction\nRestored: #{}\nby {} ({})'.format(
+                        data[0], get_username_or_name(callbackquery.from_user), callbackquery.from_user.id)
+                bot.send_message(LOGGING_CHAT, text)
+                notify_chat_admins(karma.chat, text)
+
         bot.answer_callback_query(callbackquery.id, 'Wrong transaction!')
     except:
         with CrashReport(*sys.exc_info()) as c:
@@ -345,3 +348,28 @@ def cmd_messages_count(message):
         bot.send_message(message.chat.id, '\n'.join(text), disable_notification=True)
     except:
         crash_message(message)
+
+
+@bot.message_handler(commands=['asubscribe'])
+def cmd_admin_subscribe(message):
+    if message.location == 'private':
+        return None
+
+    if not sender_is_admin(message.chat.id, message.from_user.id):
+        return None
+
+    if AdminSubscribe.is_subscribed(message.chat.id, message.from_user.id):
+        return bot.reply_to(message, 'Вы уже подписаны на уведомления об обновлениях кармы в этом диалоге')
+
+    AdminSubscribe.subscribe(message.chat.id, message.from_user.id)
+    bot.reply_to(message, 'Вы подписались на уведомления об изменениях кармы в этом диалоге')
+
+
+@bot.message_handler(commands=['aunsubscribe'])
+def cmd_admin_unsubscribe(message):
+    if message.location == 'private':
+        return None
+
+    if AdminSubscribe.is_subscribed(message.chat.id, message.from_user.id):
+        AdminSubscribe.unsubscribe(message.chat.id, message.chat.id)
+        bot.reply_to(message, 'Вы отписались от уведомлений об изменении кармы в этом чате.')

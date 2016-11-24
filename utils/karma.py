@@ -1,6 +1,7 @@
 import telebot
 from config import LOGGING_CHAT
 from meta import bot
+from models.dialogs import AdminSubscribe
 from models.karma import Karma
 from utils.cache import get_cached_user_chat, update_cached_user, users_cache
 from utils.chat import get_username_or_name, generate_inline_data
@@ -122,6 +123,7 @@ def log_transaction(transaction, chat=0, from_user=0, to_user=0, amount=0, descr
     markup.add(telebot.types.InlineKeyboardButton(
         'Cancel', callback_data=generate_inline_data('CANCEL_TRANSACTION', [str(transaction)])))
     bot.send_message(LOGGING_CHAT, '\n'.join(message), parse_mode='html', reply_markup=markup)
+    notify_chat_admins(chat.id, '\n'.join(message), markup=markup)
     # log.info('\n'.join(message))
 
 
@@ -142,3 +144,11 @@ def reset_chat_karma(chat):
                 '<code>{}</code> transactions'.format(chat.title or get_username_or_name(chat), chat.id,
                                                       counter))
     return counter
+
+
+def notify_chat_admins(chat_id, text, markup=None):
+    for user_id in AdminSubscribe.get_chat_subscribers(chat_id=chat_id):
+        try:
+            bot.send_message(user_id, text, parse_mode='html', reply_markup=markup)
+        except:
+            pass
