@@ -3,6 +3,8 @@ Calculate karma in telegram.
 
 You can add this bot to any dialogs.
 
+Repository moved to https://bitbucket.org/illemius/telegram-karma-bot
+
 Copyright © 2016 Illemius Corp
 
 License: http://opensource.org/licenses/MIT
